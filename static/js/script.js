@@ -1,7 +1,7 @@
 /* Internship Tracker (LocalStorage) */
 
 const STORAGE_KEY = "internship_tracker_v1";
-const FOLLOWUP_DEFAULT_DAYS = 14;
+const FOLLOWUP_DEFAULT_DAYS = 30;
 
 const Status = {
     APPLIED: "APPLIED",
