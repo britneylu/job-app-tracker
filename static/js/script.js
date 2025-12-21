@@ -1,6 +1,4 @@
-/* ============================
-   Internship Tracker (LocalStorage)
-   ============================ */
+/* Internship Tracker (LocalStorage) */
 
 const STORAGE_KEY = "internship_tracker_v1";
 const FOLLOWUP_DEFAULT_DAYS = 14;
@@ -76,7 +74,6 @@ let state = {
 };
 
 /* ---------- Utils ---------- */
-
 function nowISODate() {
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -104,18 +101,18 @@ function daysBetween(isoA, isoB) {
 }
 
 function isFollowupNeeded(item) {
-    // If rejected/offer/archived, don't nag.
+    // if rejected/offer/archived --> don't nag
     if ([Status.REJECTED, Status.OFFER, Status.ARCHIVED].includes(item.status)) return false;
 
     const today = nowISODate();
 
-    // If explicit follow-up date exists and is due or past:
+    // if explicit follow-up date exists and is due or past
     if (item.followUpDate) {
         const diff = daysBetween(item.followUpDate, today); // today - followUpDate
         return diff !== null && diff >= 0;
     }
 
-    // Otherwise, default: applied date older than threshold
+    // otherwise, default --> applied date older than threshold
     const age = daysBetween(item.dateApplied, today);
     return age !== null && age >= FOLLOWUP_DEFAULT_DAYS;
 }
@@ -156,8 +153,7 @@ function toast(message) {
     toast._t = setTimeout(() => els.toast.classList.add("hidden"), 2200);
 }
 
-/* ---------- Storage ---------- */
-
+/* ---------- STORAGE ---------- */
 function load() {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
@@ -175,9 +171,8 @@ function save(items) {
 }
 
 /* ---------- CRUD ---------- */
-
 function newId() {
-    // Simple unique enough id for local app
+    // simple unique enough id for local app
     return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
@@ -202,8 +197,7 @@ function deleteItem(id) {
     render();
 }
 
-/* ---------- Filtering / Sorting ---------- */
-
+/* ---------- FILTER/SORT ---------- */
 function matchesSearch(item, q) {
     if (!q) return true;
     const hay = [
@@ -260,8 +254,7 @@ function applyFilterSort(items) {
     return out;
 }
 
-/* ---------- Rendering ---------- */
-
+/* ---------- RENDER ---------- */
 function setSummary() {
     const total = state.items.length;
     const applied = state.items.filter(i => i.status === Status.APPLIED).length;
@@ -285,7 +278,7 @@ function renderRow(item) {
         : `${escapeHtml(item.company)}`;
 
     const followBadge = followNeeded
-        ? `<span class="badge warn">Follow-up • ${escapeHtml(followText)}</span>`
+        ? `<span class="badge warn">${escapeHtml(followText)}</span>`
         : `<span class="badge">${escapeHtml(followText)}</span>`;
 
     return `
@@ -301,11 +294,16 @@ function renderRow(item) {
       </div>
       <div role="cell">${escapeHtml(item.dateApplied || "—")}</div>
       <div role="cell">${followBadge}</div>
-      <div role="cell" class="actions">
-        <button class="action-btn" data-action="edit">Edit</button>
-        <button class="action-btn" data-action="dup">Duplicate</button>
-        <button class="action-btn danger" data-action="del">Delete</button>
-      </div>
+    <div role="cell" class="actions">
+        <button class="kebab-btn" aria-label="More actions">⋯</button>
+
+        <div class="action-menu hidden">
+            <button data-action="edit">Edit</button>
+            <button data-action="dup">Duplicate</button>
+            <button data-action="del" class="danger">Delete</button>
+        </div>
+    </div>
+
     </div>
   `;
 }
@@ -324,23 +322,51 @@ function render() {
         els.tableBody.innerHTML = filtered.map(renderRow).join("");
     }
 
-    // wire row button actions
+    // wire kebab menu actions
     els.tableBody.querySelectorAll(".table-row").forEach(row => {
-        row.addEventListener("click", (e) => {
+        const kebabBtn = row.querySelector(".kebab-btn");
+        const menu = row.querySelector(".action-menu");
+
+        if (!kebabBtn || !menu) return;
+
+        // toggle menu when clicking ...
+        kebabBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+
+            // close any other open menus
+            document.querySelectorAll(".action-menu").forEach(m => {
+                if (m !== menu) m.classList.add("hidden");
+            });
+
+            menu.classList.toggle("hidden");
+        });
+
+        // handle menu item clicks
+        menu.addEventListener("click", (e) => {
             const btn = e.target.closest("button");
             if (!btn) return;
 
-            const id = row.getAttribute("data-id");
-            const action = btn.getAttribute("data-action");
-            if (!id || !action) return;
+            const action = btn.dataset.action;
+            const id = row.dataset.id;
 
             if (action === "edit") openModalForEdit(id);
+
+            if (action === "dup") duplicateItem(id);
+
             if (action === "del") {
                 const item = state.items.find(i => i.id === id);
                 const ok = confirm(`Delete "${item?.company || "this"}" application?`);
                 if (ok) deleteItem(id);
             }
-            if (action === "dup") duplicateItem(id);
+
+            menu.classList.add("hidden");
+        });
+    });
+
+    // close all action menus when clicking outside
+    document.addEventListener("click", () => {
+        document.querySelectorAll(".action-menu").forEach(menu => {
+            menu.classList.add("hidden");
         });
     });
 
@@ -351,8 +377,7 @@ function render() {
     });
 }
 
-/* ---------- Modal ---------- */
-
+/* ---------- MODAL ---------- */
 function openModal() {
     els.modal.classList.remove("hidden");
     els.modalBackdrop.classList.remove("hidden");
@@ -425,8 +450,7 @@ function duplicateItem(id) {
     });
 }
 
-/* ---------- Import / Export ---------- */
-
+/* ---------- IMPORT/EXPORT ---------- */
 function exportData() {
     const data = {
         version: 1,
@@ -439,7 +463,7 @@ function exportData() {
 
     const a = document.createElement("a");
     a.href = url;
-    a.download = `internship-tracker-export-${nowISODate()}.json`;
+    a.download = `job-app-tracker-export-${nowISODate()}.json`;
     document.body.appendChild(a);
     a.click();
     a.remove();
@@ -457,7 +481,7 @@ function importDataFile(file) {
 
             if (!Array.isArray(items)) throw new Error("Invalid import format");
 
-            // Basic normalization
+            // basic normalization
             const normalized = items
                 .filter(Boolean)
                 .map(it => ({
@@ -490,7 +514,7 @@ function importDataFile(file) {
     reader.readAsText(file);
 }
 
-/* ---------- Escaping (simple safety) ---------- */
+/* ---------- ESCAPING (simple safety) ---------- */
 function escapeHtml(str) {
     return String(str ?? "")
         .replaceAll("&", "&amp;")
@@ -503,8 +527,7 @@ function escapeAttr(str) {
     return escapeHtml(str).replaceAll(" ", "");
 }
 
-/* ---------- Events ---------- */
-
+/* ---------- EVENTS ---------- */
 function setActiveChip(filter) {
     els.filterChips.forEach(ch => {
         const isActive = ch.getAttribute("data-filter") === filter;
@@ -557,7 +580,7 @@ els.toggleFollowupsOnly.addEventListener("change", (e) => {
     render();
 });
 
-// Modal controls
+// modal controls
 els.btnCloseModal.addEventListener("click", closeModal);
 els.btnCancel.addEventListener("click", closeModal);
 els.modalBackdrop.addEventListener("click", closeModal);
@@ -569,7 +592,7 @@ document.addEventListener("keydown", (e) => {
 });
 
 els.btnArchiveToggle.addEventListener("click", () => {
-    // Toggle archived for current form status
+    // toggle archived for current form status
     els.status.value = (els.status.value === Status.ARCHIVED) ? Status.APPLIED : Status.ARCHIVED;
 });
 
@@ -608,36 +631,12 @@ els.form.addEventListener("submit", (e) => {
     closeModal();
 });
 
-/* ---------- Initialize ---------- */
-
+/* ---------- INITIALIZATION ---------- */
 (function init() {
     state.items = load();
-
     // default date on modal
     els.dateApplied.value = nowISODate();
-
-    // If first time, preload a few sample rows (optional).
-    // Comment out this block if you want an empty start.
-    if (state.items.length === 0) {
-        state.items = [
-            {
-                id: newId(),
-                company: "Example Co.",
-                role: "Product Intern",
-                location: "Remote",
-                status: Status.APPLIED,
-                dateApplied: nowISODate(),
-                link: "",
-                followUpDate: "",
-                contact: "Referral (optional)",
-                notes: "This is a sample row. Edit or delete it.",
-                createdAt: Date.now(),
-                updatedAt: Date.now(),
-            }
-        ];
-        save(state.items);
-    }
-
     setActiveChip(state.filter);
+
     render();
 })();

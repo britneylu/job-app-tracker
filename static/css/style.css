@@ -363,9 +363,66 @@ h1 {
 }
 
 .actions {
+    position: relative;
     display: flex;
-    gap: 8px;
     justify-content: flex-end;
+}
+
+/* Kebab (⋯) button */
+.kebab-btn {
+    border: 1px solid var(--border);
+    background: rgba(255, 255, 255, .03);
+    color: var(--text);
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.kebab-btn:hover {
+    background: rgba(255, 255, 255, .06);
+}
+
+/* Dropdown menu */
+.action-menu {
+    position: absolute;
+    top: 40px;
+    right: 0;
+    min-width: 140px;
+    background: #14141b;
+    /* solid, not transparent */
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 6px;
+    z-index: 20;
+}
+
+/* Menu items */
+.action-menu button {
+    width: 100%;
+    background: none;
+    border: none;
+    color: var(--text);
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    font: inherit;
+    font-size: 12px;
+}
+
+.action-menu button:hover {
+    background: rgba(255, 255, 255, .06);
+}
+
+.action-menu button.danger {
+    color: #ff4d4d;
 }
 
 .action-btn {
@@ -436,8 +493,6 @@ h1 {
     left: 50%;
     transform: translate(-50%, -50%);
     width: min(760px, 92vw);
-    /* transparent like */
-    /* background: linear-gradient(180deg, rgba(255, 255, 255, .06), rgba(255, 255, 255, .03)); */
     background: #14141b;
     border: 1px solid var(--border);
     border-radius: 18px;
