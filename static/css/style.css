@@ -368,7 +368,7 @@ h1 {
     justify-content: flex-end;
 }
 
-/* Kebab (⋯) button */
+/* kebab (⋯) button */
 .kebab-btn {
     border: 1px solid var(--border);
     background: rgba(255, 255, 255, .03);
@@ -388,7 +388,7 @@ h1 {
     background: rgba(255, 255, 255, .06);
 }
 
-/* Dropdown menu */
+/* dropdown menu */
 .action-menu {
     position: absolute;
     top: 40px;
@@ -403,7 +403,7 @@ h1 {
     z-index: 20;
 }
 
-/* Menu items */
+/* menu items */
 .action-menu button {
     width: 100%;
     background: none;
@@ -574,6 +574,26 @@ h1 {
 }
 
 @media (max-width: 900px) {
+    .logo-dot {
+        width: 10px;
+        height: 10px;
+        box-shadow: none;   /* remove glow */
+        margin-top: 2px;
+    }
+
+    .brand {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .brand h1 {
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    .subtitle {
+        font-size: 11px;
+    }
     .wrap {
         width: min(1100px, 94vw);
     }

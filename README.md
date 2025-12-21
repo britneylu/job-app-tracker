@@ -20,6 +20,13 @@ This project focuses on clarity, usability, and realistic product constraints ra
 
 ---
 
+## Future Enhancements
+
+- **Cross-device access**  
+  Allow users to sign in with an email and password to seamlessly track applications across desktop and mobile devices.
+
+---
+
 ## Tech Stack
 
 - HTML  
