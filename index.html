@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Internship Application Tracker</title>
+    <link rel="stylesheet" href="./static/css/style.css" />
+</head>
+
+<body>
+    <header class="topbar">
+        <div class="wrap topbar-inner">
+            <div class="brand">
+                <div class="logo-dot" aria-hidden="true"></div>
+                <div>
+                    <h1>Job Application Tracker</h1>
+                    <p class="subtitle">Keep applications, statuses, and follow-ups in one place.</p>
+                </div>
+            </div>
+
+            <div class="topbar-actions">
+                <button id="btnAdd" class="btn primary">+ Add Application</button>
+                <button id="btnExport" class="btn">Export</button>
+                <label class="btn filelike" for="importFile">Import</label>
+                <input id="importFile" type="file" accept="application/json" hidden />
+                <button id="btnClearAll" class="btn danger">Clear All</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="wrap main">
+        <!-- Summary cards -->
+        <section class="summary" aria-label="Summary">
+            <div class="card">
+                <div class="card-label">Total</div>
+                <div id="sumTotal" class="card-value">0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Applied</div>
+                <div id="sumApplied" class="card-value">0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Interview</div>
+                <div id="sumInterview" class="card-value">0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Offers</div>
+                <div id="sumOffer" class="card-value">0</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Follow-ups Needed</div>
+                <div id="sumFollowups" class="card-value">0</div>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls" aria-label="Controls">
+            <div class="filters" role="tablist" aria-label="Status Filters">
+                <button class="chip active" data-filter="ALL" role="tab" aria-selected="true">All</button>
+                <button class="chip" data-filter="APPLIED" role="tab">Applied</button>
+                <button class="chip" data-filter="OA" role="tab">OA</button>
+                <button class="chip" data-filter="INTERVIEW" role="tab">Interview</button>
+                <button class="chip" data-filter="OFFER" role="tab">Offer</button>
+                <button class="chip" data-filter="REJECTED" role="tab">Rejected</button>
+                <button class="chip" data-filter="ARCHIVED" role="tab">Archived</button>
+            </div>
+
+            <div class="control-row">
+                <div class="field">
+                    <label for="searchInput">Search</label>
+                    <input id="searchInput" type="search" placeholder="Company, role, location, notes..." />
+                </div>
+
+                <div class="field">
+                    <label for="sortSelect">Sort</label>
+                    <select id="sortSelect">
+                        <option value="DATE_DESC">Date applied (newest)</option>
+                        <option value="DATE_ASC">Date applied (oldest)</option>
+                        <option value="COMPANY_ASC">Company (A–Z)</option>
+                        <option value="STATUS_ASC">Status</option>
+                        <option value="FOLLOWUP_DESC">Follow-up priority</option>
+                    </select>
+                </div>
+
+                <div class="field inline">
+                    <label class="checkbox">
+                        <input id="toggleFollowupsOnly" type="checkbox" />
+                        Show follow-ups only
+                    </label>
+                </div>
+            </div>
+        </section>
+
+        <!-- Table -->
+        <section class="table-wrap" aria-label="Applications">
+            <div class="table-head">
+                <h2>Your Applications</h2>
+                <p id="resultsMeta" class="muted">0 results</p>
+            </div>
+
+            <div class="table" role="table" aria-label="Applications table">
+                <div class="table-row table-header" role="row">
+                    <div role="columnheader">Company</div>
+                    <div role="columnheader">Role</div>
+                    <div role="columnheader">Location</div>
+                    <div role="columnheader">Status</div>
+                    <div role="columnheader">Applied</div>
+                    <div role="columnheader">Follow-up</div>
+                    <div role="columnheader" class="right">Actions</div>
+                </div>
+
+                <div id="tableBody" class="table-body"></div>
+            </div>
+
+            <div id="emptyState" class="empty hidden">
+                <div class="empty-title">No applications yet</div>
+                <div class="empty-text">Add your first application to start tracking progress.</div>
+                <button class="btn primary" id="btnAddEmpty">+ Add Application</button>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal -->
+    <div id="modalBackdrop" class="modal-backdrop hidden" aria-hidden="true"></div>
+
+    <div id="modal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-header">
+            <h3 id="modalTitle">Add Application</h3>
+            <button id="btnCloseModal" class="icon-btn" aria-label="Close">✕</button>
+        </div>
+
+        <form id="appForm" class="modal-body">
+            <input type="hidden" id="appId" />
+
+            <div class="grid">
+                <div class="field">
+                    <label for="company">Company *</label>
+                    <input id="company" required maxlength="80" placeholder="e.g., Spotify" />
+                </div>
+
+                <div class="field">
+                    <label for="role">Role *</label>
+                    <input id="role" required maxlength="120" placeholder="e.g., Product Intern" />
+                </div>
+
+                <div class="field">
+                    <label for="location">Location</label>
+                    <input id="location" maxlength="120" placeholder="e.g., Remote / Philadelphia, PA" />
+                </div>
+
+                <div class="field">
+                    <label for="status">Status *</label>
+                    <select id="status" required>
+                        <option value="APPLIED">Applied</option>
+                        <option value="OA">OA</option>
+                        <option value="INTERVIEW">Interview</option>
+                        <option value="OFFER">Offer</option>
+                        <option value="REJECTED">Rejected</option>
+                        <option value="ARCHIVED">Archived</option>
+                    </select>
+                </div>
+
+                <div class="field">
+                    <label for="dateApplied">Date applied *</label>
+                    <input id="dateApplied" type="date" required />
+                </div>
+
+                <div class="field">
+                    <label for="posting-link">Job posting link *</label>
+                    <input id="link" type="url" required placeholder="https://..." />
+                </div>
+
+                <div class="field">
+                    <label for="followUpDate">Follow-up date</label>
+                    <input id="followUpDate" type="date" />
+                    <div class="hint">Optional: set a follow-up reminder date.</div>
+                </div>
+
+                <div class="field">
+                    <label for="account-link">Account link</label>
+                    <input id="link" type="url" placeholder="https://..." />
+                </div>
+
+                <div class="field">
+                    <label for="contact">Contact</label>
+                    <input id="contact" maxlength="120" placeholder="Recruiter / referral (optional)" />
+                </div>
+
+                <div class="field full">
+                    <label for="notes">Notes</label>
+                    <textarea id="notes" rows="4" maxlength="800"
+                        placeholder="Notes, next steps, interview prep, etc."></textarea>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="left-actions">
+                    <button type="button" id="btnArchiveToggle" class="btn">Toggle Archive</button>
+                </div>
+                <div class="right-actions">
+                    <button type="button" id="btnCancel" class="btn">Cancel</button>
+                    <button type="submit" class="btn primary" id="btnSave">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+
+    <script src="./static/js/script.js"></script>
+</body>
+
+</html>
