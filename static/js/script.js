@@ -1,5 +1,82 @@
 /* Internship Tracker (LocalStorage) */
 
+/* import Firebase modules */
+/* https://console.firebase.google.com/u/0/project/job-app-tracker-e5dc4/authentication/users */
+import {
+    signInWithEmailAndPassword,
+    createUserWithEmailAndPassword,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+import {
+    collection,
+    getDocs,
+    setDoc,
+    deleteDoc,
+    doc
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+/* import Firebase globals */
+const auth = window.firebaseAuth;
+const db = window.firebaseDB;
+let currentUser = null;
+
+// Auth UI elements
+const authModal = document.getElementById("authModal");
+const authBackdrop = document.getElementById("authBackdrop");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const btnLogin = document.getElementById("btnLogin");
+const btnLogout = document.getElementById("btnLogout");
+
+function openAuth() {
+    authModal.classList.remove("hidden");
+    authBackdrop.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+    authEmail.focus();
+}
+
+function closeAuth() {
+    authModal.classList.add("hidden");
+    authBackdrop.classList.add("hidden");
+    document.body.style.overflow = "";
+    authEmail.value = "";
+    authPassword.value = "";
+}
+
+// open modal
+btnLogin.addEventListener("click", openAuth);
+
+// close modal
+document.getElementById("btnAuthCancel").addEventListener("click", closeAuth);
+document.getElementById("btnCloseAuth").addEventListener("click", closeAuth);
+authBackdrop.addEventListener("click", closeAuth);
+
+// submit login
+document.getElementById("btnAuthSubmit").addEventListener("click", async () => {
+    const email = authEmail.value.trim();
+    const password = authPassword.value.trim();
+
+    if (!email || !password) {
+        alert("Please enter email and password.");
+        return;
+    }
+
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+        if (err.code === "auth/user-not-found") {
+            await createUserWithEmailAndPassword(auth, email, password);
+        } else {
+            alert(err.message);
+            return;
+        }
+    }
+
+    closeAuth();
+});
+
 const STORAGE_KEY = "internship_tracker_v1";
 const FOLLOWUP_DEFAULT_DAYS = 30;
 
@@ -73,7 +150,7 @@ let state = {
     followupsOnly: false,
 };
 
-/* ---------- Utils ---------- */
+/* ---------- UTILS ---------- */
 function nowISODate() {
     const d = new Date();
     const yyyy = d.getFullYear();
@@ -154,20 +231,30 @@ function toast(message) {
 }
 
 /* ---------- STORAGE ---------- */
-function load() {
-    try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) return [];
-        return parsed;
-    } catch {
-        return [];
+async function load() {
+    if (!currentUser) {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
     }
+
+    const snap = await getDocs(
+        collection(db, "users", currentUser.uid, "applications")
+    );
+
+    return snap.docs.map(d => d.data());
 }
 
-function save(items) {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+async function save(items) {
+    if (!currentUser) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        return;
+    }
+
+    for (const item of items) {
+        await setDoc(
+            doc(db, "users", currentUser.uid, "applications", item.id),
+            item
+        );
+    }
 }
 
 /* ---------- CRUD ---------- */
@@ -631,12 +718,44 @@ els.form.addEventListener("submit", (e) => {
     closeModal();
 });
 
+/* ---------- LOGIN/LOGOUT LOGIC ---------- */
+async function login(email, password) {
+    try {
+        await signInWithEmailAndPassword(auth, email, password);
+    } catch {
+        await createUserWithEmailAndPassword(auth, email, password);
+    }
+}
+
+async function logout() {
+    await signOut(auth);
+}
+
+document.getElementById("btnLogout").addEventListener("click", logout);
+
 /* ---------- INITIALIZATION ---------- */
-(function init() {
-    state.items = load();
-    // default date on modal
+(async function init() {
+    state.items = await load();
     els.dateApplied.value = nowISODate();
     setActiveChip(state.filter);
-
     render();
 })();
+
+/* AUTH CHANGES */
+onAuthStateChanged(auth, async (user) => {
+    if (user) {
+        currentUser = user;
+        btnLogin.classList.add("hidden");
+        btnLogout.classList.remove("hidden");
+
+        state.items = await load();
+    } else {
+        currentUser = null;
+        btnLogin.classList.remove("hidden");
+        btnLogout.classList.add("hidden");
+
+        state.items = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+    }
+
+    render();
+});

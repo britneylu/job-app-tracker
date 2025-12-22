@@ -10,26 +10,21 @@ This project focuses on clarity, usability, and realistic product constraints ra
 
 ## Features
 
-- Track applications by company, role, status, and dates  
-- Filter and search across all applications  
-- Automatic follow-up reminders with overdue indicators  
-- Compact ⋯ action menu for edit, duplicate, and delete  
-- Local data persistence using `localStorage`  
-- Import and export application data (JSON)  
-- Responsive design for desktop and mobile  
-
----
-
-## Future Enhancements
-
-- **Cross-device access**  
-  Allow users to sign in with an email and password to seamlessly track applications across desktop and mobile devices.
+- Login and logout for cross-device syncing (Firebase Authentication)
+- Track applications by company, role, status, and dates
+- Filter and search across all applications
+- Automatic follow-up reminders with overdue indicators
+- Compact ⋯ action menu for edit, duplicate, and delete
+- Local data persistence using `localStorage` (offline support)
+- Import and export application data (JSON)
+- Responsive design for desktop and mobile
 
 ---
 
 ## Tech Stack
 
-- HTML  
-- CSS  
-- JavaScript  
+- HTML
+- CSS
+- JavaScript
 - Browser LocalStorage
+- Google Firebase (Authentication + Firestore)

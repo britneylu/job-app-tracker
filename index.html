@@ -26,6 +26,8 @@
                 <label class="btn filelike" for="importFile">Import</label>
                 <input id="importFile" type="file" accept="application/json" hidden />
                 <button id="btnClearAll" class="btn danger">Clear All</button>
+                <button id="btnLogin" class="btn">Login</button>
+                <button id="btnLogout" class="btn hidden">Logout</button>
             </div>
         </div>
     </header>
@@ -209,7 +211,58 @@
 
     <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
 
-    <script src="./static/js/script.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCbtDH0g6FlRebguZTo-eROZUHG-1WcQU0",
+            authDomain: "job-app-tracker-e5dc4.firebaseapp.com",
+            projectId: "job-app-tracker-e5dc4",
+            storageBucket: "job-app-tracker-e5dc4.appspot.com",
+            messagingSenderId: "878922045892",
+            appId: "1:878922045892:web:f58859258b1f3a46f6ec91"
+        };
+
+        const app = initializeApp(firebaseConfig);
+
+        window.firebaseAuth = getAuth(app);
+        window.firebaseDB = getFirestore(app);
+    </script>
+
+    <script type="module" src="./static/js/script.js"></script>
+
+    <!-- Auth Backdrop -->
+    <div id="authBackdrop" class="modal-backdrop hidden"></div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal hidden" role="dialog" aria-modal="true">
+        <div class="modal-header">
+            <h3>Sign in</h3>
+            <button id="btnCloseAuth" class="icon-btn">✕</button>
+        </div>
+
+        <div class="modal-body">
+            <div class="field">
+                <label>Email</label>
+                <input id="authEmail" type="email" placeholder="yourname@email.com" />
+            </div>
+
+            <div class="field">
+                <label>Password</label>
+                <input id="authPassword" type="password" placeholder="••••••••" />
+            </div>
+
+            <p class="hint">New users will be signed up automatically.</p>
+        </div>
+
+        <div class="login-modal-footer">
+            <button class="btn" id="btnAuthCancel">Cancel</button>
+            <button class="btn primary" id="btnAuthSubmit">Continue</button>
+        </div>
+    </div>
+
 </body>
 
 </html>

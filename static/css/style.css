@@ -67,6 +67,31 @@ body {
     box-shadow: 0 0 0 6px rgba(31, 81, 255, .15);
 }
 
+/* login */
+#authModal {
+    width: min(420px, 92vw);
+}
+
+#authModal .hint {
+    margin-top: 10px;
+    text-align: center;
+}
+
+.modal-backdrop.hidden {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+.login-modal-footer {
+    margin-top: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 12px 12px;
+    border-top: 1px solid var(--border);
+}
+
 h1 {
     margin: 0;
     font-size: 18px;
