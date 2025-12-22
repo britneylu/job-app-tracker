@@ -754,6 +754,7 @@ onAuthStateChanged(auth, async (user) => {
         btnLogin.classList.remove("hidden");
         btnLogout.classList.add("hidden");
 
+        // when logged out --> load and show all locally saved applications from this browser
         // state.items = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
         state.items = []; // clear on logout
     }
