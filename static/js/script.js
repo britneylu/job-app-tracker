@@ -748,13 +748,14 @@ onAuthStateChanged(auth, async (user) => {
         btnLogin.classList.add("hidden");
         btnLogout.classList.remove("hidden");
 
-        state.items = await load();
+        state.items = await load(); // reload from Firebase
     } else {
         currentUser = null;
         btnLogin.classList.remove("hidden");
         btnLogout.classList.add("hidden");
 
-        state.items = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        // state.items = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
+        state.items = []; // clear on logout
     }
 
     render();
