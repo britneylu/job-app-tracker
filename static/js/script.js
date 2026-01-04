@@ -134,7 +134,8 @@ const els = {
     location: document.getElementById("location"),
     status: document.getElementById("status"),
     dateApplied: document.getElementById("dateApplied"),
-    link: document.getElementById("link"),
+    postingLink: document.getElementById("postingLink"),
+    accountLink: document.getElementById("accountLink"),
     followUpDate: document.getElementById("followUpDate"),
     contact: document.getElementById("contact"),
     notes: document.getElementById("notes"),
@@ -516,7 +517,8 @@ function openModalForEdit(id) {
     els.location.value = item.location || "";
     els.status.value = item.status || Status.APPLIED;
     els.dateApplied.value = item.dateApplied || nowISODate();
-    els.link.value = item.link || "";
+    els.postingLink.value = item.link || "";
+    els.accountLink.value = item.accountLink || "";
     els.followUpDate.value = item.followUpDate || "";
     els.contact.value = item.contact || "";
     els.notes.value = item.notes || "";
@@ -693,7 +695,8 @@ els.form.addEventListener("submit", (e) => {
         location: els.location.value.trim(),
         status: els.status.value,
         dateApplied: els.dateApplied.value,
-        link: safeUrl(els.link.value.trim()),
+        link: safeUrl(els.postingLink.value.trim()),
+        accountLink: safeUrl(els.accountLink.value.trim()),
         followUpDate: els.followUpDate.value,
         contact: els.contact.value.trim(),
         notes: els.notes.value.trim(),
