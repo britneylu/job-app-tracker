@@ -160,6 +160,12 @@ function nowISODate() {
     return `${yyyy}-${mm}-${dd}`;
 }
 
+function formatDateMDY(isoDate) {
+    if (!isoDate) return "—";
+    const [yyyy, mm, dd] = isoDate.split("-");
+    return `${mm}/${dd}/${yyyy}`;
+}
+
 function safeUrl(url) {
     if (!url) return "";
     try {
@@ -380,7 +386,7 @@ function renderRow(item) {
           ${escapeHtml(StatusLabel[item.status] || item.status)}
         </span>
       </div>
-      <div role="cell">${escapeHtml(item.dateApplied || "—")}</div>
+    <div role="cell">${escapeHtml(formatDateMDY(item.dateApplied))}</div>
       <div role="cell">${followBadge}</div>
     <div role="cell" class="actions">
         <button class="kebab-btn" aria-label="More actions">⋯</button>
