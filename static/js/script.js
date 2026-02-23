@@ -86,6 +86,7 @@ const Status = {
     INTERVIEW: "INTERVIEW",
     OFFER: "OFFER",
     REJECTED: "REJECTED",
+    WITHDRAWN: "WITHDRAWN",
     ARCHIVED: "ARCHIVED",
 };
 
@@ -95,6 +96,7 @@ const StatusLabel = {
     INTERVIEW: "Interview",
     OFFER: "Offer",
     REJECTED: "Rejected",
+    WITHDRAWN: "Withdrawn",
     ARCHIVED: "Archived",
 };
 
@@ -185,8 +187,8 @@ function daysBetween(isoA, isoB) {
 }
 
 function isFollowupNeeded(item) {
-    // if rejected/offer/archived --> don't nag
-    if ([Status.REJECTED, Status.OFFER, Status.ARCHIVED].includes(item.status)) return false;
+    // if rejected/offer/archived/withdrawn --> don't nag
+    if ([Status.REJECTED, Status.OFFER, Status.ARCHIVED, Status.WITHDRAWN].includes(item.status)) return false;
 
     const today = nowISODate();
 
@@ -224,6 +226,7 @@ function statusPillClass(status) {
         case Status.OA: return "oa";
         case Status.INTERVIEW: return "interview";
         case Status.OFFER: return "offer";
+        case Status.WITHDRAWN: return "withdrawn";
         case Status.REJECTED: return "rejected";
         case Status.ARCHIVED: return "archived";
         default: return "applied";

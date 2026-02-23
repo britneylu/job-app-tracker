@@ -366,6 +366,10 @@ h1 {
     background: var(--danger);
 }
 
+.pill.withdrawn .dot {
+    background: #ff9966;
+}
+
 .pill.archived .dot {
     background: #6f6f7f;
 }
