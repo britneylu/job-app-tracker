@@ -287,9 +287,23 @@ function updateItem(id, patch) {
     render();
 }
 
-function deleteItem(id) {
+// function deleteItem(id) {
+//     state.items = state.items.filter(it => it.id !== id);
+//     save(state.items);
+//     toast("Deleted");
+//     render();
+// }
+async function deleteItem(id) {
     state.items = state.items.filter(it => it.id !== id);
-    save(state.items);
+
+    if (currentUser) {
+        await deleteDoc(
+            doc(db, "users", currentUser.uid, "applications", id)
+        );
+    } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+    }
+
     toast("Deleted");
     render();
 }
