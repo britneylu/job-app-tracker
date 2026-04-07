@@ -134,6 +134,7 @@ const els = {
     company: document.getElementById("company"),
     role: document.getElementById("role"),
     location: document.getElementById("location"),
+    cycle: document.getElementById("cycle"),
     status: document.getElementById("status"),
     dateApplied: document.getElementById("dateApplied"),
     postingLink: document.getElementById("postingLink"),
@@ -147,6 +148,7 @@ const els = {
 
 let state = {
     items: [],
+    cycle: "internship",   // "internship" | "fulltime"
     filter: "ALL",
     search: "",
     sort: "DATE_DESC",
@@ -321,6 +323,9 @@ function matchesSearch(item, q) {
 function applyFilterSort(items) {
     let out = [...items];
 
+    // cycle filter
+    out = out.filter(it => (it.cycle || "internship") === state.cycle);
+
     // status filter
     if (state.filter !== "ALL") {
         out = out.filter(it => it.status === state.filter);
@@ -367,11 +372,12 @@ function applyFilterSort(items) {
 
 /* ---------- RENDER ---------- */
 function setSummary() {
-    const total = state.items.length;
-    const applied = state.items.filter(i => i.status === Status.APPLIED).length;
-    const interview = state.items.filter(i => i.status === Status.INTERVIEW).length;
-    const offer = state.items.filter(i => i.status === Status.OFFER).length;
-    const followups = state.items.filter(isFollowupNeeded).length;
+    const cycleItems = state.items.filter(i => (i.cycle || "internship") === state.cycle);
+    const total = cycleItems.length;
+    const applied = cycleItems.filter(i => i.status === Status.APPLIED).length;
+    const interview = cycleItems.filter(i => i.status === Status.INTERVIEW).length;
+    const offer = cycleItems.filter(i => i.status === Status.OFFER).length;
+    const followups = cycleItems.filter(isFollowupNeeded).length;
 
     els.sumTotal.textContent = total;
     els.sumApplied.textContent = applied;
@@ -506,6 +512,7 @@ function closeModal() {
 function resetForm() {
     els.form.reset();
     els.appId.value = "";
+    els.cycle.value = state.cycle;   // default to whichever tab is active
     els.status.value = Status.APPLIED;
     els.dateApplied.value = nowISODate();
     els.followUpDate.value = "";
@@ -538,6 +545,7 @@ function openModalForEdit(id) {
     els.company.value = item.company || "";
     els.role.value = item.role || "";
     els.location.value = item.location || "";
+    els.cycle.value = item.cycle || "internship";
     els.status.value = item.status || Status.APPLIED;
     els.dateApplied.value = item.dateApplied || nowISODate();
     els.postingLink.value = item.link || "";
@@ -601,6 +609,7 @@ function importDataFile(file) {
                     company: String(it.company || "").trim(),
                     role: String(it.role || "").trim(),
                     location: String(it.location || "").trim(),
+                    cycle: (it.cycle === "fulltime") ? "fulltime" : "internship",
                     status: Status[it.status] ? it.status : (Object.values(Status).includes(it.status) ? it.status : Status.APPLIED),
                     dateApplied: it.dateApplied || nowISODate(),
                     link: safeUrl(it.link || ""),
@@ -649,6 +658,21 @@ function setActiveChip(filter) {
 
 els.btnAdd.addEventListener("click", () => openModalForAdd());
 els.btnAddEmpty.addEventListener("click", () => openModalForAdd());
+
+// cycle switcher
+document.querySelectorAll(".cycle-tab").forEach(tab => {
+    tab.addEventListener("click", () => {
+        state.cycle = tab.getAttribute("data-cycle");
+        document.querySelectorAll(".cycle-tab").forEach(t => {
+            t.classList.toggle("active", t === tab);
+            t.setAttribute("aria-selected", String(t === tab));
+        });
+        // reset status filter when switching cycles
+        state.filter = "ALL";
+        setActiveChip("ALL");
+        render();
+    });
+});
 
 els.btnExport.addEventListener("click", exportData);
 
@@ -716,6 +740,7 @@ els.form.addEventListener("submit", (e) => {
         company: els.company.value.trim(),
         role: els.role.value.trim(),
         location: els.location.value.trim(),
+        cycle: els.cycle.value,
         status: els.status.value,
         dateApplied: els.dateApplied.value,
         link: safeUrl(els.postingLink.value.trim()),
