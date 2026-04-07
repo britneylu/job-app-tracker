@@ -67,7 +67,42 @@ body {
     box-shadow: 0 0 0 6px rgba(31, 81, 255, .15);
 }
 
-/* login */
+/* Cycle switcher */
+.cycle-switcher {
+    display: inline-flex;
+    gap: 4px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    margin-top: 5px;
+}
+
+.cycle-tab {
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    padding: 4px 10px;
+    border-radius: 999px;
+    cursor: pointer;
+    font: inherit;
+    font-size: 11px;
+    transition: background .15s ease, color .15s ease;
+    white-space: nowrap;
+}
+
+.cycle-tab:hover {
+    color: var(--text);
+    background: rgba(255,255,255,.05);
+}
+
+.cycle-tab.active {
+    background: rgba(31, 81, 255, .22);
+    color: var(--text);
+    border: 1px solid rgba(31, 81, 255, .45);
+}
+
+
 #authModal {
     width: min(420px, 92vw);
 }
@@ -623,6 +658,10 @@ h1 {
     .subtitle {
         font-size: 11px;
     }
+    .topbar-inner {
+        flex-wrap: wrap;
+    }
+
     .wrap {
         width: min(1100px, 94vw);
     }
