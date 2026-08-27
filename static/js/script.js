@@ -148,7 +148,7 @@ const els = {
 
 let state = {
     items: [],
-    cycle: "internship",   // "internship" | "fulltime"
+    cycle: "fulltime",   // "internship" | "fulltime"
     filter: "ALL",
     search: "",
     sort: "DATE_DESC",
@@ -342,10 +342,18 @@ function applyFilterSort(items) {
     // sort
     switch (state.sort) {
         case "DATE_ASC":
-            out.sort((a, b) => (a.dateApplied || "").localeCompare(b.dateApplied || ""));
+            out.sort((a, b) => {
+                const dateComparison = (a.dateApplied || "").localeCompare(b.dateApplied || "");
+                if (dateComparison !== 0) return dateComparison;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
             break;
         case "DATE_DESC":
-            out.sort((a, b) => (b.dateApplied || "").localeCompare(a.dateApplied || ""));
+            out.sort((a, b) => {
+                const dateComparison = (b.dateApplied || "").localeCompare(a.dateApplied || "");
+                if (dateComparison !== 0) return dateComparison;
+                return (b.createdAt || 0) - (a.createdAt || 0);
+            });
             break;
         case "COMPANY_ASC":
             out.sort((a, b) => (a.company || "").localeCompare(b.company || ""));
