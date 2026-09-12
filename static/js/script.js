@@ -399,8 +399,13 @@ function renderRow(item) {
     const followText = followupLabel(item);
 
     const companyCell = item.link
-        ? `<a class="link" href="${escapeHtml(item.link)}" target="_blank" rel="noreferrer">${escapeHtml(item.company)}</a>`
+        ? `<a class="link" href="${escapeHtml(item.link)}" target="_blank" rel="noreferrer" title="Open job posting (new tab)">${escapeHtml(item.company)}</a>`
         : `${escapeHtml(item.company)}`;
+
+    const accountUrl = safeUrl(item.accountLink);
+    const accountLink = /^https?:\/\//i.test(accountUrl)
+        ? `<a class="link account-link" href="${escapeHtml(accountUrl)}" target="_blank" rel="noopener noreferrer" title="Open account (new tab)" aria-label="${escapeHtml(item.company)} account (opens in a new tab)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M14 3h7v7M21 3 10 14"/><path d="M10 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-5"/></svg></a>`
+        : "";
 
     const followBadge = followNeeded
         ? `<span class="badge warn">${escapeHtml(followText)}</span>`
@@ -415,6 +420,7 @@ function renderRow(item) {
         <span class="pill ${statusPillClass(item.status)}">
           <span class="dot" aria-hidden="true"></span>
           ${escapeHtml(StatusLabel[item.status] || item.status)}
+          ${accountLink}
         </span>
       </div>
     <div role="cell">${escapeHtml(formatDateMDY(item.dateApplied))}</div>
