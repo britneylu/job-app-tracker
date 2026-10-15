@@ -275,16 +275,28 @@ function newId() {
     return `${Date.now()}_${Math.random().toString(16).slice(2)}`;
 }
 
-function addItem(item) {
-    state.items = [item, ...state.items];
-    save(state.items);
+async function saveItem(item, items) {
+    if (currentUser) {
+        await setDoc(doc(db, "users", currentUser.uid, "applications", item.id), item);
+    } else {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+    }
+}
+
+async function addItem(item) {
+    const items = [item, ...state.items];
+    await saveItem(item, items);
+    state.items = items;
     toast("Application added");
     render();
 }
 
-function updateItem(id, patch) {
-    state.items = state.items.map(it => it.id === id ? { ...it, ...patch, updatedAt: Date.now() } : it);
-    save(state.items);
+async function updateItem(id, patch) {
+    const original = state.items.find(it => it.id === id);
+    if (!original) throw new Error("Application no longer exists. Reload the page and try again.");
+    const item = { ...original, ...patch, updatedAt: Date.now() };
+    await saveItem(item, state.items.map(it => it.id === id ? item : it));
+    state.items = state.items.map(it => it.id === id ? item : it);
     toast("Saved");
     render();
 }
@@ -746,8 +758,10 @@ els.btnArchiveToggle.addEventListener("click", () => {
     els.status.value = (els.status.value === Status.ARCHIVED) ? Status.APPLIED : Status.ARCHIVED;
 });
 
-els.form.addEventListener("submit", (e) => {
+els.form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const saveButton = document.getElementById("btnSave");
+    if (saveButton.disabled) return;
 
     const id = els.appId.value.trim();
     const item = {
@@ -769,18 +783,28 @@ els.form.addEventListener("submit", (e) => {
         return;
     }
 
-    if (!id) {
-        addItem({
+    saveButton.disabled = true;
+    saveButton.textContent = "Saving…";
+    try {
+        if (!id) {
+            await addItem({
             id: newId(),
             ...item,
             createdAt: Date.now(),
             updatedAt: Date.now(),
-        });
-    } else {
-        updateItem(id, item);
-    }
+            });
+        } else {
+            await updateItem(id, item);
+        }
 
-    closeModal();
+        closeModal();
+    } catch (err) {
+        console.error("Failed to save application", err);
+        alert(`Could not save the application. Your changes are still in the form. ${err.message}`);
+    } finally {
+        saveButton.disabled = false;
+        saveButton.textContent = "Save";
+    }
 });
 
 /* ---------- LOGIN/LOGOUT LOGIC ---------- */
