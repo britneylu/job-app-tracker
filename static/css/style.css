@@ -381,6 +381,10 @@ h1 {
     background: var(--muted);
 }
 
+.pill.saved .dot {
+    background: #56c8d8;
+}
+
 .pill.applied .dot {
     background: var(--accent);
 }

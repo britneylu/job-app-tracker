@@ -40,7 +40,7 @@
         <!-- Summary cards -->
         <section class="summary" aria-label="Summary">
             <div class="card">
-                <div class="card-label">Total</div>
+                <div class="card-label">Total Applications</div>
                 <div id="sumTotal" class="card-value">0</div>
             </div>
             <div class="card">
@@ -65,6 +65,7 @@
         <section class="controls" aria-label="Controls">
             <div class="filters" role="tablist" aria-label="Status Filters">
                 <button class="chip active" data-filter="ALL" role="tab" aria-selected="true">All</button>
+                <button class="chip" data-filter="SAVED" role="tab">Saved</button>
                 <button class="chip" data-filter="APPLIED" role="tab">Applied</button>
                 <button class="chip" data-filter="OA" role="tab">OA</button>
                 <button class="chip" data-filter="INTERVIEW" role="tab">Interview</button>
@@ -168,6 +169,7 @@
                 <div class="field">
                     <label for="status">Status *</label>
                     <select id="status" required>
+                        <option value="SAVED">Saved</option>
                         <option value="APPLIED">Applied</option>
                         <option value="OA">OA</option>
                         <option value="INTERVIEW">Interview</option>
@@ -186,6 +188,11 @@
                 <div class="field">
                     <label for="postingLink">Job posting link *</label>
                     <input id="postingLink" type="url" required placeholder="https://..." />
+                </div>
+
+                <div class="field" hidden>
+                    <label for="expectedPostingDate">Expected posting date</label>
+                    <input id="expectedPostingDate" type="date" />
                 </div>
 
                 <div class="field">

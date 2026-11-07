@@ -81,6 +81,7 @@ const STORAGE_KEY = "internship_tracker_v1";
 const FOLLOWUP_DEFAULT_DAYS = 30;
 
 const Status = {
+    SAVED: "SAVED",
     APPLIED: "APPLIED",
     OA: "OA",
     INTERVIEW: "INTERVIEW",
@@ -91,6 +92,7 @@ const Status = {
 };
 
 const StatusLabel = {
+    SAVED: "Saved",
     APPLIED: "Applied",
     OA: "OA",
     INTERVIEW: "Interview",
@@ -137,6 +139,7 @@ const els = {
     cycle: document.getElementById("cycle"),
     status: document.getElementById("status"),
     dateApplied: document.getElementById("dateApplied"),
+    expectedPostingDate: document.getElementById("expectedPostingDate"),
     postingLink: document.getElementById("postingLink"),
     accountLink: document.getElementById("accountLink"),
     followUpDate: document.getElementById("followUpDate"),
@@ -190,7 +193,7 @@ function daysBetween(isoA, isoB) {
 
 function isFollowupNeeded(item) {
     // if rejected/offer/archived/withdrawn --> don't nag
-    if ([Status.REJECTED, Status.OFFER, Status.ARCHIVED, Status.WITHDRAWN].includes(item.status)) return false;
+    if ([Status.SAVED, Status.REJECTED, Status.OFFER, Status.ARCHIVED, Status.WITHDRAWN].includes(item.status)) return false;
 
     const today = nowISODate();
 
@@ -206,6 +209,9 @@ function isFollowupNeeded(item) {
 }
 
 function followupLabel(item) {
+    if (item.status === Status.SAVED) {
+        return item.expectedPostingDate ? `Opens ${formatDateMDY(item.expectedPostingDate)}` : "—";
+    }
     const today = nowISODate();
     if (item.followUpDate) {
         const diff = daysBetween(item.followUpDate, today);
@@ -224,6 +230,7 @@ function followupLabel(item) {
 
 function statusPillClass(status) {
     switch (status) {
+        case Status.SAVED: return "saved";
         case Status.APPLIED: return "applied";
         case Status.OA: return "oa";
         case Status.INTERVIEW: return "interview";
@@ -393,7 +400,7 @@ function applyFilterSort(items) {
 /* ---------- RENDER ---------- */
 function setSummary() {
     const cycleItems = state.items.filter(i => (i.cycle || "internship") === state.cycle);
-    const total = cycleItems.length;
+    const total = cycleItems.filter(i => i.status !== Status.SAVED).length;
     const applied = cycleItems.filter(i => i.status === Status.APPLIED).length;
     const interview = cycleItems.filter(i => i.status === Status.INTERVIEW).length;
     const offer = cycleItems.filter(i => i.status === Status.OFFER).length;
@@ -535,6 +542,23 @@ function closeModal() {
     document.body.style.overflow = "";
 }
 
+function syncStatusFields() {
+    const saved = els.status.value === Status.SAVED;
+    els.dateApplied.required = !saved;
+    els.dateApplied.disabled = saved;
+    document.querySelector('label[for="dateApplied"]').textContent = saved ? "Date applied" : "Date applied *";
+    els.postingLink.required = !saved;
+    document.querySelector('label[for="postingLink"]').textContent = saved ? "Job posting link" : "Job posting link *";
+    els.expectedPostingDate.closest(".field").hidden = !saved;
+    if (saved) {
+        els.dateApplied.value = "";
+    } else if (!els.dateApplied.value) {
+        els.dateApplied.value = nowISODate();
+    }
+}
+
+els.status.addEventListener("change", syncStatusFields);
+
 function resetForm() {
     els.form.reset();
     els.appId.value = "";
@@ -553,11 +577,14 @@ function openModalForAdd(prefill = null) {
         els.location.value = prefill.location ?? "";
         els.status.value = prefill.status ?? Status.APPLIED;
         els.dateApplied.value = prefill.dateApplied ?? nowISODate();
-        els.link.value = prefill.link ?? "";
+        els.postingLink.value = prefill.link ?? "";
+        els.accountLink.value = prefill.accountLink ?? "";
+        els.expectedPostingDate.value = prefill.expectedPostingDate ?? "";
         els.followUpDate.value = prefill.followUpDate ?? "";
         els.contact.value = prefill.contact ?? "";
         els.notes.value = prefill.notes ?? "";
     }
+    syncStatusFields();
     openModal();
     setTimeout(() => els.company.focus(), 0);
 }
@@ -576,10 +603,12 @@ function openModalForEdit(id) {
     els.dateApplied.value = item.dateApplied || nowISODate();
     els.postingLink.value = item.link || "";
     els.accountLink.value = item.accountLink || "";
+    els.expectedPostingDate.value = item.expectedPostingDate || "";
     els.followUpDate.value = item.followUpDate || "";
     els.contact.value = item.contact || "";
     els.notes.value = item.notes || "";
 
+    syncStatusFields();
     openModal();
     setTimeout(() => els.company.focus(), 0);
 }
@@ -637,7 +666,9 @@ function importDataFile(file) {
                     location: String(it.location || "").trim(),
                     cycle: (it.cycle === "fulltime") ? "fulltime" : "internship",
                     status: Status[it.status] ? it.status : (Object.values(Status).includes(it.status) ? it.status : Status.APPLIED),
-                    dateApplied: it.dateApplied || nowISODate(),
+                    dateApplied: it.status === Status.SAVED ? "" : (it.dateApplied || nowISODate()),
+                    expectedPostingDate: it.expectedPostingDate || "",
+                    accountLink: safeUrl(it.accountLink || ""),
                     link: safeUrl(it.link || ""),
                     followUpDate: it.followUpDate || "",
                     contact: String(it.contact || "").trim(),
@@ -756,6 +787,7 @@ document.addEventListener("keydown", (e) => {
 els.btnArchiveToggle.addEventListener("click", () => {
     // toggle archived for current form status
     els.status.value = (els.status.value === Status.ARCHIVED) ? Status.APPLIED : Status.ARCHIVED;
+    syncStatusFields();
 });
 
 els.form.addEventListener("submit", async (e) => {
@@ -770,7 +802,8 @@ els.form.addEventListener("submit", async (e) => {
         location: els.location.value.trim(),
         cycle: els.cycle.value,
         status: els.status.value,
-        dateApplied: els.dateApplied.value,
+        dateApplied: els.status.value === Status.SAVED ? "" : els.dateApplied.value,
+        expectedPostingDate: els.expectedPostingDate.value,
         link: safeUrl(els.postingLink.value.trim()),
         accountLink: safeUrl(els.accountLink.value.trim()),
         followUpDate: els.followUpDate.value,
@@ -778,8 +811,8 @@ els.form.addEventListener("submit", async (e) => {
         notes: els.notes.value.trim(),
     };
 
-    if (!item.company || !item.role || !item.dateApplied) {
-        alert("Please fill in Company, Role, and Date applied.");
+    if (!item.company || !item.role || (item.status !== Status.SAVED && !item.dateApplied)) {
+        alert("Please fill in Company and Role, and Date applied for applications you have submitted.");
         return;
     }
 
