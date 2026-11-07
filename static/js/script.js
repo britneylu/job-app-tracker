@@ -394,6 +394,9 @@ function applyFilterSort(items) {
             break;
     }
 
+    // Stable sort pins Saved roles while preserving the selected order within each group.
+    out.sort((a, b) => Number(b.status === Status.SAVED) - Number(a.status === Status.SAVED));
+
     return out;
 }
 
